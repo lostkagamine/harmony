@@ -9,7 +9,7 @@ namespace TestPL
 {
     class Program
     {
-        static string Code = @"""pogger""; 1234";
+        static string Code = @"""pogger"" 1234 1234";
 
         static void Main(string[] args)
         {

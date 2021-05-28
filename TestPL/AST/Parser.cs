@@ -42,6 +42,13 @@ namespace TestPL.AST
             tk.Next();
         }
 
+        void SkipPuncOptional(char punc)
+        {
+            if (current.Type == TokenType.Punctuation
+                && current.Value == punc)
+                tk.Next();
+        }
+
         bool IsPunc(char punc)
         {
             if (current.Type == TokenType.Punctuation)
@@ -69,14 +76,14 @@ namespace TestPL.AST
             var a = new List<Node>();
             var first = true;
             SkipPunc(start);
-            while (!tk.Eof)
+            do
             {
                 if (IsPunc(stop)) break;
                 if (first) first = false;
                 else SkipPunc(sep);
                 if (IsPunc(stop)) break;
                 a.Add(parser());
-            }
+            } while (!tk.Eof);
             return a;
         }
 
@@ -111,14 +118,13 @@ namespace TestPL.AST
             if (IsKeyword("true") || IsKeyword("false"))
                 return ParseBoolean();
 
-            var t = current;
-            tk.Next();
+            var nt = tk.Next();
 
-            if (t.Type == TokenType.Variable |
-                t.Type == TokenType.Number |
-                t.Type == TokenType.String)
+            if (nt.Type == TokenType.Variable |
+                nt.Type == TokenType.Number |
+                nt.Type == TokenType.String)
             {
-                return ConvertToPrimitive(t);
+                return ConvertToPrimitive(nt);
             }
 
             throw tk.Die($"unexpected input");
@@ -191,7 +197,7 @@ namespace TestPL.AST
             do
             {
                 prog.Add(ParseExpr());
-                if (!tk.Eof) SkipPunc(';');
+                if (!tk.Eof) SkipPuncOptional(';');
             } while (!tk.Eof);
             return new ProcedureNode()
             {

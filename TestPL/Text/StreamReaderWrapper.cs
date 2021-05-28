@@ -39,7 +39,7 @@ namespace TestPL.Text
 
         public char Next()
         {
-            if (Eof)
+            if (Position >= backend.Length)
                 return '\0';
             var j = backend[(int)Position];
             if (j == '\n')
@@ -55,7 +55,13 @@ namespace TestPL.Text
             return j;
         }
 
-        public char Peek() => backend[(int)Position];
+        public char Peek()
+        {
+            if (Position >= backend.Length)
+                return '\0';
+            var t = backend[(int)Position];
+            return t;
+        }
 
         public string ReadUntil(Func<char, bool> predicate)
         {

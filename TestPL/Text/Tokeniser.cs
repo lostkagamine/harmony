@@ -54,7 +54,7 @@ namespace TestPL.Text
 
         public Exception Die(string msg) => Input.Die(msg);
 
-        public bool Eof => Input.Eof;
+        public bool Eof = false;
 
         void SkipLine()
         {
@@ -151,8 +151,15 @@ namespace TestPL.Text
         {
             Input.ReadWhile(c => "\r\n\t ".Contains(c));
 
-            if (Input.Eof)
-                return null;
+            if (Input.Eof || Input.Peek() == '\0')
+            {
+                Eof = true;
+                return new Token()
+                {
+                    Type = TokenType.Eof,
+                    Value = null
+                };
+            }
 
             var c = Input.Peek();
             if (c == '#')
@@ -178,14 +185,20 @@ namespace TestPL.Text
 
         public Token Peek()
         {
-            return CurrentToken ??= ReadNext();
+            if (CurrentToken == null)
+                CurrentToken = ReadNext();
+            return CurrentToken;
         }
 
         public Token Next()
         {
-            CurrentToken = null;
-            var rn = ReadNext();
-            return rn;
+            if (CurrentToken != null)
+            {
+                var t = CurrentToken;
+                CurrentToken = null;
+                return t;
+            }
+            return ReadNext();
         }
     }
 }

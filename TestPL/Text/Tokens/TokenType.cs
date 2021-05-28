@@ -16,6 +16,7 @@ namespace TestPL.Text.Tokens
         Punctuation,
         Operand,
         Operator,
-        Keyword
+        Keyword,
+        Eof
     }
 }
