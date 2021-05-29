@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using TestPL.AST.Nodes;
-using TestPL.Text;
-using TestPL.Text.Tokens;
+using Harmony.AST.Nodes;
+using Harmony.Text;
+using Harmony.Text.Tokens;
 
-namespace TestPL.AST
+namespace Harmony.AST
 {
     public class Parser
     {
@@ -37,7 +37,7 @@ namespace TestPL.AST
 
         void SkipPunc(char punc)
         {
-            if (current.Type != TokenType.Punctuation)
+            if (current.Type != TokenType.Punctuation || current.Value != punc)
                 throw tk.Die($"expected a '{punc}'");
             tk.Next();
         }
@@ -47,6 +47,13 @@ namespace TestPL.AST
             if (current.Type == TokenType.Punctuation
                 && current.Value == punc)
                 tk.Next();
+        }
+
+        void SkipKw(string kw)
+        {
+            if (current.Type != TokenType.Keyword || current.Value != kw)
+                throw tk.Die($"expected a '{kw}' here");
+            tk.Next();
         }
 
         bool IsPunc(char punc)
@@ -84,6 +91,7 @@ namespace TestPL.AST
                 if (IsPunc(stop)) break;
                 a.Add(parser());
             } while (!tk.Eof);
+            SkipPunc(stop);
             return a;
         }
 
@@ -105,6 +113,68 @@ namespace TestPL.AST
             return null;
         }
 
+        Node ParseBlock()
+        {
+            var t = new List<Node>();
+            var receivedEnd = false;
+            do
+            {
+                var r = ParseExpr();
+                if (r.Type == NodeType.End)
+                {
+                    receivedEnd = true;
+                    break;
+                }
+                t.Add(r);
+                if (!tk.Eof) SkipPuncOptional(';');
+            } while (!tk.Eof);
+
+            if (!receivedEnd)
+                throw tk.Die("expected 'end'");
+
+            return new ProcedureNode()
+            {
+                Body = t
+            };
+        }
+
+        Node ParseIf()
+        {
+            SkipKw("if");
+            var condition = ParseExpr();
+            SkipKw("then");
+            var then = ParseBlock();
+            if (IsKeyword("else"))
+            {
+                SkipKw("else");
+                var elseb = ParseBlock();
+                return new IfNode()
+                {
+                    Condition = condition,
+                    Then = then,
+                    Else = elseb
+                };
+            }
+            return new IfNode()
+            {
+                Condition = condition,
+                Then = then,
+                Else = null
+            };
+        }
+
+        Node ParseCall(Token c)
+        {
+            var id = c.Value;
+
+            var vals = Delimited('(', ')', ',', ParseExpr);
+            return new CallNode()
+            {
+                Name = id,
+                Arguments = vals
+            };
+        }
+
         Node ParseAtom()
         {
             if (IsPunc('('))
@@ -118,7 +188,29 @@ namespace TestPL.AST
             if (IsKeyword("true") || IsKeyword("false"))
                 return ParseBoolean();
 
+            if (IsKeyword("if"))
+                return ParseIf();
+
+            if (IsKeyword("end"))
+            {
+                tk.Next();
+                return new EndNode();
+            }
+
             var nt = tk.Next();
+
+            if (nt.Type == TokenType.Identifier)
+            {
+                var id = tk.Peek();
+                if (id.Type == TokenType.Punctuation && id.Value == '(')
+                {
+                    return ParseCall(nt);
+                }
+                return new IdentifierNode()
+                {
+                    Value = nt.Value
+                };
+            }
 
             if (nt.Type == TokenType.Variable |
                 nt.Type == TokenType.Number |
@@ -127,7 +219,7 @@ namespace TestPL.AST
                 return ConvertToPrimitive(nt);
             }
 
-            throw tk.Die($"unexpected input");
+            throw tk.Die($"unexpected input: {nt.Type} '{nt.Value}'");
         }
 
         Node ParseExpr()

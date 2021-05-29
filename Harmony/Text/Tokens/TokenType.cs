@@ -4,18 +4,19 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TestPL.AST.Nodes
+namespace Harmony.Text.Tokens
 {
-    public enum NodeType
+    public enum TokenType
     {
-        Procedure,
-        Expression,
         Number,
         String,
-        Boolean,
         Variable,
-        If,
-        Assignment,
-        Binary
+        Identifier,
+        Equals,
+        Punctuation,
+        Operand,
+        Operator,
+        Keyword,
+        Eof
     }
 }

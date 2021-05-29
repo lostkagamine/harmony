@@ -4,11 +4,21 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TestPL.AST.Nodes
+namespace Harmony.AST.Nodes
 {
     public class Node
     {
         public NodeType Type;
+    }
+
+    public class IdentifierNode : Node
+    {
+        public IdentifierNode()
+        {
+            Type = NodeType.Identifier;
+        }
+
+        public string Value;
     }
 
     public class ProcedureNode : Node
@@ -69,5 +79,48 @@ namespace TestPL.AST.Nodes
         {
             Type = NodeType.Assignment;
         }
+    }
+
+    public class FunctionNode : Node
+    {
+        public FunctionNode()
+        {
+            Type = NodeType.Function;
+        }
+
+        public string Name;
+        public ProcedureNode Body;
+        public List<string> Arguments;
+    }
+
+    public class CallNode : Node
+    {
+        public CallNode()
+        {
+            Type = NodeType.Call;
+        }
+
+        public string Name;
+        public List<Node> Arguments;
+    }
+
+    public class EndNode : Node
+    {
+        public EndNode()
+        {
+            Type = NodeType.End;
+        }
+    }
+
+    public class IfNode : Node
+    {
+        public IfNode()
+        {
+            Type = NodeType.If;
+        }
+
+        public Node Condition;
+        public Node Then;
+        public Node Else;
     }
 }

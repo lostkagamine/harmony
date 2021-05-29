@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TestPL.Text
+namespace Harmony.Text
 {
     public class StreamReaderWrapper : IDisposable
     {

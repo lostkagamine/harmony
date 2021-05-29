@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using TestPL.Text.Tokens;
+using Harmony.Text.Tokens;
 
-namespace TestPL.Text
+namespace Harmony.Text
 {
     public static class Re
     {
@@ -33,7 +33,10 @@ namespace TestPL.Text
             "then",
             "else",
             "true",
-            "false"
+            "false",
+            "function",
+            "do",
+            "end"
         };
 
         public Tokeniser(StreamReaderWrapper s)
@@ -44,9 +47,9 @@ namespace TestPL.Text
         bool IsIdStart(char c)
             => Re.MatchC(@"[a-z_]", c);
         bool IsId(char c)
-            => IsIdStart(c) || "1234567890!?<->£=".Contains(c);
+            => IsIdStart(c) || "1234567890!?".Contains(c);
         bool IsPunc(char c)
-            => ";!${}()".Contains(c);
+            => ";${}()[]{}<->!".Contains(c);
         bool IsNumberStart(char c)
             => "1234567890".Contains(c);
         bool IsNumber(char c)
@@ -112,7 +115,7 @@ namespace TestPL.Text
             {
                 o = new Token()
                 {
-                    Type = TokenType.Identifier,
+                    Type = TokenType.Keyword,
                     Value = id
                 };
             }
