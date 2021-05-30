@@ -37,7 +37,8 @@ namespace Harmony.Text
             "function",
             "do",
             "end",
-            "extern"
+            "extern",
+            "object"
         };
 
         public Tokeniser(StreamReaderWrapper s)
@@ -50,7 +51,7 @@ namespace Harmony.Text
         bool IsId(char c)
             => IsIdStart(c) || "1234567890!?.".Contains(c);
         bool IsPunc(char c)
-            => ";${}()[]{}=<->!".Contains(c);
+            => ",;${}()[]{}=<->!+-/*".Contains(c);
         bool IsNumberStart(char c)
             => "1234567890".Contains(c);
         bool IsNumber(char c)
@@ -139,6 +140,8 @@ namespace Harmony.Text
             do
             {
                 r = Input.Next();
+                if (!IsNumber(r))
+                    break;
                 o += r;
             } while (IsNumber(r));
             var val = double.Parse(o);
