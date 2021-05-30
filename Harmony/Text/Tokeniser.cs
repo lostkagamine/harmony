@@ -36,7 +36,8 @@ namespace Harmony.Text
             "false",
             "function",
             "do",
-            "end"
+            "end",
+            "extern"
         };
 
         public Tokeniser(StreamReaderWrapper s)
@@ -47,9 +48,9 @@ namespace Harmony.Text
         bool IsIdStart(char c)
             => Re.MatchC(@"[a-z_]", c);
         bool IsId(char c)
-            => IsIdStart(c) || "1234567890!?".Contains(c);
+            => IsIdStart(c) || "1234567890!?.".Contains(c);
         bool IsPunc(char c)
-            => ";${}()[]{}<->!".Contains(c);
+            => ";${}()[]{}=<->!".Contains(c);
         bool IsNumberStart(char c)
             => "1234567890".Contains(c);
         bool IsNumber(char c)

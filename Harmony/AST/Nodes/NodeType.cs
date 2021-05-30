@@ -19,6 +19,7 @@ namespace Harmony.AST.Nodes
         Binary,
         Call,
         Function,
-        End
+        End,
+        Extern
     }
 }

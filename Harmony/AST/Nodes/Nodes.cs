@@ -100,7 +100,7 @@ namespace Harmony.AST.Nodes
             Type = NodeType.Call;
         }
 
-        public string Name;
+        public Node Left;
         public List<Node> Arguments;
     }
 
@@ -122,5 +122,16 @@ namespace Harmony.AST.Nodes
         public Node Condition;
         public Node Then;
         public Node Else;
+    }
+
+    public class ExternNode : Node
+    {
+        public ExternNode()
+        {
+            Type = NodeType.Extern;
+        }
+
+        public string Value;
+        public List<Node> Types;
     }
 }

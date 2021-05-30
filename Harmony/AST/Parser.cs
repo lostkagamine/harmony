@@ -138,13 +138,17 @@ namespace Harmony.AST
             };
         }
 
+        bool inIf = false;
+
         Node ParseIf()
         {
             SkipKw("if");
             var condition = ParseExpr();
             SkipKw("then");
+            inIf = true;
             var then = ParseBlock();
-            if (IsKeyword("else"))
+            var next = tk.Peek();
+            if (next.Type == TokenType.Keyword && next.Value == "else")
             {
                 SkipKw("else");
                 var elseb = ParseBlock();
@@ -163,16 +167,45 @@ namespace Harmony.AST
             };
         }
 
-        Node ParseCall(Token c)
+        Node ParseCall(Node c)
         {
-            var id = c.Value;
-
             var vals = Delimited('(', ')', ',', ParseExpr);
             return new CallNode()
             {
-                Name = id,
+                Left = c,
                 Arguments = vals
             };
+        }
+
+        Node ParseIdent(Token c)
+        {
+            return new IdentifierNode()
+            {
+                Value = c.Value
+            };
+        }
+
+        Node ParseAssignment(Token c)
+        {
+            tk.Next();
+            var n = new AssignmentNode()
+            {
+                Left = ParseIdent(c),
+                Operator = "=",
+                Right = ParseExpr()
+            };
+            return n;
+        }
+
+        Node MaybeCall(Node c)
+        {
+            if (current.Type == TokenType.Punctuation && current.Value == '(')
+            {
+                return ParseCall(c);
+            } else
+            {
+                return c;
+            }
         }
 
         Node ParseAtom()
@@ -191,10 +224,31 @@ namespace Harmony.AST
             if (IsKeyword("if"))
                 return ParseIf();
 
-            if (IsKeyword("end"))
+            if (IsKeyword("end") || (inIf && IsKeyword("else")))
+            {
+                if (inIf)
+                {
+                    inIf = false;
+                }
+                if (!IsKeyword("else")) tk.Next();
+                return new EndNode();
+            }
+
+            if (IsKeyword("extern"))
             {
                 tk.Next();
-                return new EndNode();
+                var id = tk.Next();
+                var types = Delimited('(', ')', ',', () =>
+                {
+                    var n = current;
+                    tk.Next();
+                    return ParseIdent(n);
+                });
+                return new ExternNode()
+                {
+                    Value = id.Value,
+                    Types = types
+                };
             }
 
             var nt = tk.Next();
@@ -202,9 +256,9 @@ namespace Harmony.AST
             if (nt.Type == TokenType.Identifier)
             {
                 var id = tk.Peek();
-                if (id.Type == TokenType.Punctuation && id.Value == '(')
+                if (id.Type == TokenType.Punctuation && id.Value == '=')
                 {
-                    return ParseCall(nt);
+                    return ParseAssignment(nt);
                 }
                 return new IdentifierNode()
                 {
@@ -224,7 +278,7 @@ namespace Harmony.AST
 
         Node ParseExpr()
         {
-            return MaybeBinary(ParseAtom(), 0);
+            return MaybeCall(MaybeBinary(ParseAtom(), 0));
         }
 
         Node MaybeBinary(Node left, int myprecedence)
@@ -272,7 +326,9 @@ namespace Harmony.AST
 
         Node ParseBoolean()
         {
-            if (IsKeyword("true"))
+            var t = current;
+            tk.Next();
+            if (t.Type == TokenType.Keyword && t.Value == "true")
                 return new BooleanNode()
                 {
                     Value = true
