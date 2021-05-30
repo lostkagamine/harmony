@@ -197,6 +197,29 @@ namespace Harmony.AST
             return n;
         }
 
+        Node IdentAndSkip()
+        {
+            var n = current;
+            tk.Next();
+            return ParseIdent(n);
+        }
+
+        Node ParseFunction()
+        {
+            SkipKw("function");
+            var id = ParseIdent(current);
+            tk.Next();
+            var args = Delimited('(', ')', ',', IdentAndSkip);
+            SkipKw("do");
+            var bd = ParseBlock();
+            return new FunctionNode()
+            {
+                Name = ((IdentifierNode)id).Value,
+                Body = (ProcedureNode)bd,
+                Arguments = args.Select(e => ((IdentifierNode)e).Value).ToList()
+            };
+        }
+
         Node MaybeCall(Node c)
         {
             if (current.Type == TokenType.Punctuation && current.Value == '(')
@@ -234,16 +257,14 @@ namespace Harmony.AST
                 return new EndNode();
             }
 
+            if (IsKeyword("function"))
+                return ParseFunction();
+
             if (IsKeyword("extern"))
             {
                 tk.Next();
                 var id = tk.Next();
-                var types = Delimited('(', ')', ',', () =>
-                {
-                    var n = current;
-                    tk.Next();
-                    return ParseIdent(n);
-                });
+                var types = Delimited('(', ')', ',', IdentAndSkip);
                 return new ExternNode()
                 {
                     Value = id.Value,

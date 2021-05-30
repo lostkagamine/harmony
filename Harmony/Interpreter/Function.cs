@@ -21,11 +21,28 @@ namespace Harmony.Interpreter
     public class HarmonyFunction : IFunction
     {
         public Node Body;
+        public List<string> Arguments;
 
         public Container Run(Interpreter i, List<Container> args)
         {
-            // TODO
-            return new Container(null);
+            var oldscope = i.Environment;
+            var myscope = oldscope.Extend();
+
+            var ind = 0;
+            foreach (var key in Arguments)
+            {
+                Container val = null;
+                if (ind < args.Count)
+                    val = args[ind];
+                myscope.Define(key, val);
+                ind++;
+            }
+
+            var ret = i.Evaluate(Body, myscope);
+
+            i.Environment = oldscope;
+
+            return ret;
         }
     }
 }

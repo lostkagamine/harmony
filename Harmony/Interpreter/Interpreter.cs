@@ -106,6 +106,15 @@ namespace Harmony.Interpreter
                     {
                         Method = method
                     });
+                case NodeType.Function:
+                    var fnode = ((FunctionNode)ast);
+                    var fname = fnode.Name;
+                    var fobj = new HarmonyFunction()
+                    {
+                        Arguments = fnode.Arguments,
+                        Body = fnode.Body
+                    };
+                    return env.Set(fname, new Container(fobj));
 
                 default:
                     throw new Exception($"interpretation failure: '{ast.Type}'");
