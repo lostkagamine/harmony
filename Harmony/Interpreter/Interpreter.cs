@@ -17,7 +17,8 @@ namespace Harmony.Interpreter
             if (cond.Truthy())
             {
                 return Evaluate(ast.Then);
-            } else
+            }
+            else
             {
                 if (ast.Else != null)
                     return Evaluate(ast.Else);
@@ -123,7 +124,7 @@ namespace Harmony.Interpreter
                     foreach (var n in ((ProcedureNode)ast).Body)
                     {
                         output = Evaluate(n, _env);
-                        if (output.Returning)
+                        if (output != null && output.Returning)
                         {
                             output.Returning = false;
                             break;

@@ -57,6 +57,12 @@ namespace Harmony.AST
             tk.Next();
         }
 
+        void SkipKwOptional(string kw)
+        {
+            if (current.Type == TokenType.Keyword && current.Value == kw)
+                tk.Next();
+        }
+
         bool IsPunc(char punc)
         {
             if (current.Type == TokenType.Punctuation)
@@ -211,7 +217,7 @@ namespace Harmony.AST
             var id = ParseIdent(current);
             tk.Next();
             var args = Delimited('(', ')', ',', IdentAndSkip);
-            SkipKw("do");
+            SkipKwOptional("do");
             var bd = ParseBlock();
             return new FunctionNode()
             {
@@ -295,7 +301,7 @@ namespace Harmony.AST
             {
                 tk.Next(); // skip the keyword/token
                 var args = Delimited('(', ')', ',', IdentAndSkip);
-                SkipKw("do");
+                SkipKwOptional("do");
                 var body = ParseBlock();
                 return new LambdaNode()
                 {
