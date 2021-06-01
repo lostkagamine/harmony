@@ -37,6 +37,70 @@ namespace Harmony.Interpreter
             return null;
         }
 
+        Container DoBinary(BinaryNode ast)
+        {
+            T Ensure<T>(Container i)
+            {
+                if (i.Value is not T)
+                    throw new Exception($"expected type '{typeof(T).Name}' here");
+                return (T)i.Value;
+            };
+
+            double Number(Container i)
+            {
+                var n = Ensure<double>(i);
+                return n;
+            }
+
+            double NotZero(Container i)
+            {
+                var n = Ensure<double>(i);
+                if (n == 0)
+                {
+                    throw new Exception($"found a zero value where there should not have been (divide by zero?)");
+                }
+                return n;
+            }
+
+            var left = Evaluate(ast.Left);
+            var right = Evaluate(ast.Right);
+            dynamic oval = null;
+
+            switch (ast.Operator)
+            {
+                // TODO: Operator overloading. Add it in Container. 
+                case "+":
+                    oval = Number(left) + Number(right);
+                    break;
+                case "-":
+                    oval = Number(left) - Number(right);
+                    break;
+                case "*":
+                    oval = Number(left) * Number(right);
+                    break;
+                case "/":
+                    oval = Number(left) / NotZero(right);
+                    break;
+                case "^":
+                    oval = Math.Pow(Number(left), Number(right)); // Is using ^ for power a good idea?
+                    break;
+
+                // TODO: Implement equality overloading in Container.
+                case "==":
+                    oval = left.Value == right.Value;
+                    break;
+                case "!=":
+                    oval = left.Value != right.Value;
+                    break;
+                case ">=":
+                    oval = left.Value >= right.Value;
+                    break;
+
+            }
+
+            return new Container(oval);
+        }
+
         public Container Evaluate(Node ast, Environment _env = null)
         {
             var env = Environment;
@@ -115,6 +179,8 @@ namespace Harmony.Interpreter
                         Body = fnode.Body
                     };
                     return env.Set(fname, new Container(fobj));
+                case NodeType.Binary:
+                    return DoBinary((BinaryNode)ast);
 
                 default:
                     throw new Exception($"interpretation failure: '{ast.Type}'");

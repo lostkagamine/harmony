@@ -41,6 +41,14 @@ namespace Harmony.Text
             "object"
         };
 
+        public char[] Operators =
+        {
+            '=',
+            '!',
+            '>',
+            '<',
+        };
+
         public Tokeniser(StreamReaderWrapper s)
         {
             Input = s;
@@ -51,7 +59,9 @@ namespace Harmony.Text
         bool IsId(char c)
             => IsIdStart(c) || "1234567890!?.".Contains(c);
         bool IsPunc(char c)
-            => ",;${}()[]{}=<->!+-/*".Contains(c);
+            => ",;${}()[]{}=".Contains(c);
+        bool IsOperator(char c)
+            => "+-/*^".Contains(c) || Operators.Contains(c);
         bool IsNumberStart(char c)
             => "1234567890".Contains(c);
         bool IsNumber(char c)
@@ -63,7 +73,7 @@ namespace Harmony.Text
 
         void SkipLine()
         {
-            Input.ReadUntil(c => c != '\n');
+            Input.ReadWhile(c => c != '\n');
             Input.Next();
         }
 
@@ -139,9 +149,10 @@ namespace Harmony.Text
             char r;
             do
             {
-                r = Input.Next();
+                r = Input.Peek();
                 if (!IsNumber(r))
                     break;
+                Input.Next();
                 o += r;
             } while (IsNumber(r));
             var val = double.Parse(o);
@@ -149,6 +160,16 @@ namespace Harmony.Text
             {
                 Type = TokenType.Number,
                 Value = val
+            };
+        }
+
+        Token ReadOperator()
+        {
+            var o = Input.ReadWhile(IsOperator);
+            return new Token()
+            {
+                Type = TokenType.Operator,
+                Value = o
             };
         }
 
@@ -174,6 +195,9 @@ namespace Harmony.Text
                 SkipLine();
                 return ReadNext();
             }
+
+            if (IsOperator(c))
+                return ReadOperator();
 
             if (c == '"')
                 return ReadString();

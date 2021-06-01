@@ -24,7 +24,8 @@ namespace Harmony.AST
             { "-", 10 },
             { "*", 20 },
             { "/", 20 },
-            { "%", 20 }
+            { "%", 20 },
+            { "^", 30 }
         };
 
         public Parser(Tokeniser t)
