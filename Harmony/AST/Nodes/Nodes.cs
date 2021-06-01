@@ -134,4 +134,35 @@ namespace Harmony.AST.Nodes
         public string Value;
         public List<Node> Types;
     }
+
+    public class ReturnNode : Node
+    {
+        public ReturnNode()
+        {
+            Type = NodeType.Return;
+        }
+
+        public Node Value;
+    }
+
+    public class ThrowNode : Node
+    {
+        public ThrowNode()
+        {
+            Type = NodeType.Throw;
+        }
+
+        public Node Value;
+    }
+
+    public class LambdaNode : Node
+    {
+        public LambdaNode()
+        {
+            Type = NodeType.Lambda;
+        }
+
+        public List<string> Arguments;
+        public Node Body;
+    }
 }

@@ -20,6 +20,9 @@ namespace Harmony.AST.Nodes
         Call,
         Function,
         End,
-        Extern
+        Extern,
+        Return,
+        Throw,
+        Lambda
     }
 }

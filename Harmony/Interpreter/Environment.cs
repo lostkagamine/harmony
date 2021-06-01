@@ -59,10 +59,6 @@ namespace Harmony.Interpreter
         public Container Set(string name, Container value)
         {
             var scope = Lookup(name);
-            if (scope == null && Parent != null)
-            {
-                throw new Exception($"cannot define global '{name}' at non-top level");
-            }
             if (scope != null)
             {
                 scope.Variables[name] = value;

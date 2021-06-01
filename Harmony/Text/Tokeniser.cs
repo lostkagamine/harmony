@@ -38,7 +38,9 @@ namespace Harmony.Text
             "do",
             "end",
             "extern",
-            "object"
+            "object",
+            "return",
+            "throw"
         };
 
         public char[] Operators =
@@ -61,7 +63,7 @@ namespace Harmony.Text
         bool IsPunc(char c)
             => ",;${}()[]{}=".Contains(c);
         bool IsOperator(char c)
-            => "+-/*^".Contains(c) || Operators.Contains(c);
+            => "+-/*^><".Contains(c) || Operators.Contains(c);
         bool IsNumberStart(char c)
             => "1234567890".Contains(c);
         bool IsNumber(char c)

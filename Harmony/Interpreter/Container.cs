@@ -22,6 +22,8 @@ namespace Harmony.Interpreter
             }
         }
 
+        internal bool Returning;
+
         public Container(dynamic v)
         {
             _Value = v;

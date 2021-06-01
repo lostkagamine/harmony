@@ -123,6 +123,11 @@ namespace Harmony.Interpreter
                     foreach (var n in ((ProcedureNode)ast).Body)
                     {
                         output = Evaluate(n, _env);
+                        if (output.Returning)
+                        {
+                            output.Returning = false;
+                            break;
+                        }
                     }
                     return output;
                 case NodeType.Call:
@@ -131,11 +136,12 @@ namespace Harmony.Interpreter
                     if (fn.Nil())
                         throw new Exception($"attempt to call a nil value '{fn}'");
                     if (!fn.IsFunction())
-                        throw new Exception($"attempt to call a non-callable value '{fn}'");
+                        throw new Exception($"attempt to call a non-callable value '{((object)fn.Value).GetType().Name}'");
                     var args = new List<Container>();
                     foreach (var t in cn.Arguments)
                     {
-                        args.Add(Evaluate(t));
+                        var res = Evaluate(t);
+                        args.Add(res);
                     }
                     return fn.Call(this, args);
                 case NodeType.If:
@@ -179,8 +185,27 @@ namespace Harmony.Interpreter
                         Body = fnode.Body
                     };
                     return env.Set(fname, new Container(fobj));
+                case NodeType.Lambda:
+                    var lnode = ((LambdaNode)ast);
+                    var lobj = new HarmonyFunction()
+                    {
+                        Arguments = lnode.Arguments,
+                        Body = lnode.Body
+                    };
+                    return new Container(lobj);
                 case NodeType.Binary:
                     return DoBinary((BinaryNode)ast);
+                case NodeType.Return:
+                    var the = Evaluate(((ReturnNode)ast).Value);
+                    the.Returning = true;
+                    return the;
+                case NodeType.Throw:
+                    var msg = Evaluate(((ThrowNode)ast).Value).Value;
+                    if (msg is Exception)
+                    {
+                        throw msg;
+                    }
+                    throw new Exception($"userland error: '{msg}'");
 
                 default:
                     throw new Exception($"interpretation failure: '{ast.Type}'");

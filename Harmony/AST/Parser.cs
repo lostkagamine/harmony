@@ -261,6 +261,24 @@ namespace Harmony.AST
             if (IsKeyword("function"))
                 return ParseFunction();
 
+            if (IsKeyword("return"))
+            {
+                tk.Next();
+                return new ReturnNode()
+                {
+                    Value = ParseExpr()
+                };
+            }
+
+            if (IsKeyword("throw"))
+            {
+                tk.Next();
+                return new ThrowNode()
+                {
+                    Value = ParseExpr()
+                };
+            }
+
             if (IsKeyword("extern"))
             {
                 tk.Next();
@@ -273,12 +291,25 @@ namespace Harmony.AST
                 };
             }
 
+            if (IsKeyword("lambda") || (current.Type == TokenType.Operator && current.Value == "->"))
+            {
+                tk.Next(); // skip the keyword/token
+                var args = Delimited('(', ')', ',', IdentAndSkip);
+                SkipKw("do");
+                var body = ParseBlock();
+                return new LambdaNode()
+                {
+                    Body = body,
+                    Arguments = args.Select(e => ((IdentifierNode)e).Value).ToList()
+                };
+            }
+
             var nt = tk.Next();
 
             if (nt.Type == TokenType.Identifier)
             {
                 var id = tk.Peek();
-                if (id.Type == TokenType.Punctuation && id.Value == '=')
+                if (id.Type == TokenType.Operator && id.Value == "=")
                 {
                     return ParseAssignment(nt);
                 }
