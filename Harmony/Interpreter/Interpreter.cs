@@ -7,6 +7,16 @@ using System.Threading.Tasks;
 
 namespace Harmony.Interpreter
 {
+    public static class MoreMath
+    {
+        public static double Up(double a, double b, double n)
+        {
+            if (n == 1) return Math.Pow(a, b);
+            else if (n >= 1 && b == 0) return 1;
+            else return Up(a, Up(a, (b - 1), n), n - 1);
+        }
+    }
+
     public class Interpreter
     {
         public Environment Environment;
@@ -85,6 +95,9 @@ namespace Harmony.Interpreter
                 case "^":
                     oval = Math.Pow(Number(left), Number(right)); // Is using ^ for power a good idea?
                     break;
+                case "^^":
+                    oval = MoreMath.Up(Number(left), Number(right), 2);
+                    break;
 
                 // TODO: Implement equality overloading in Container.
                 case "==":
@@ -95,6 +108,15 @@ namespace Harmony.Interpreter
                     break;
                 case ">=":
                     oval = left.Value >= right.Value;
+                    break;
+                case "<=":
+                    oval = left.Value <= right.Value;
+                    break;
+                case ">":
+                    oval = left.Value > right.Value;
+                    break;
+                case "<":
+                    oval = left.Value < right.Value;
                     break;
 
             }

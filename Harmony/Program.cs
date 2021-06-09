@@ -5,6 +5,7 @@ using System.Text;
 using Harmony.AST;
 using Harmony.Text;
 using Harmony.Interpreter;
+using System.Reflection;
 
 namespace Harmony
 {
@@ -22,10 +23,26 @@ namespace Harmony
             var ast = p.ParseTopLevel();
 
             var env = new Interpreter.Environment();
-            env.Define("println", new Container((Action<object>)Console.WriteLine));
 
             var intp = new Interpreter.Interpreter();
             intp.Environment = env;
+
+            env.Define("use_assembly!", new Container(
+                (Action<string>)((a) =>
+                {
+                    Assembly.Load(a);
+                })
+            ));
+
+            Importer.Import(intp, "prelude");
+
+            env.Define("using", new Container(
+                (Action<string>)((a) =>
+                {
+                    Importer.Import(intp, a);
+                })
+            ));
+
             intp.Evaluate(ast);
         }
     }
