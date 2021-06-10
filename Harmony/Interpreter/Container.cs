@@ -85,5 +85,55 @@ namespace Harmony.Interpreter
         {
             return (T)Value;
         }
+
+        public Container GetIndex(dynamic index)
+        {
+            if (Value is double or bool or null)
+            {
+                throw new Exception($"cannot index a value of type '{((object)Value).GetType().Name}'");
+            }
+
+            var v = ((object)Value);
+            var props = v.GetType().GetProperties();
+
+            foreach (var p in props)
+            {
+                if (p.GetIndexParameters().Length > 0)
+                {
+                    // This is an indexer
+                    return new Container(p.GetGetMethod().Invoke(v, new[] { index }));
+                }
+            }
+
+            // No indexers
+            // Is there a method named that?
+
+            foreach (var m in v.GetType().GetMethods())
+            {
+                if (m.Name == index)
+                {
+                    return new Container(new ExternFunction()
+                    {
+                        Method = m,
+                        Callee = v
+                    });
+                }
+            }
+
+            // No such luck
+            // Is there a field?
+
+            foreach (var f in v.GetType().GetFields())
+            {
+                if (f.Name == index)
+                {
+                    return new Container(f.GetValue(v));
+                }
+            }
+
+            // No.
+            // Let's just die.
+            throw new Exception($"no such index '{index}' on value '{Value}'");
+        }
     }
 }

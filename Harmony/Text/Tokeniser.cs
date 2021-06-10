@@ -120,6 +120,10 @@ namespace Harmony.Text
         Token ReadIdent()
         {
             var id = Input.ReadWhile(IsId);
+            if (id.StartsWith(".") || id.EndsWith("."))
+            {
+                throw Die($"invalid identifier '{id}'; must not begin or end with a period");
+            }
             Token o = new Token()
             {
                 Type = TokenType.Identifier,

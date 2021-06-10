@@ -48,6 +48,25 @@ namespace Harmony.Interpreter
             return null;
         }
 
+        Container ResolveValue(string value)
+        {
+            Container thisVal = null;
+            var spl = value.Split(".");
+
+            foreach (var a in spl)
+            {
+                if (thisVal == null)
+                {
+                    thisVal = Environment.WideGet(a);
+                    continue;
+                }
+
+                thisVal = thisVal.GetIndex(a);
+            }
+
+            return thisVal;
+        }
+
         Container DoBinary(BinaryNode ast)
         {
             T Ensure<T>(Container i)
@@ -140,7 +159,7 @@ namespace Harmony.Interpreter
                 case NodeType.Number:
                     return new Container(((NumberNode)ast).Value);
                 case NodeType.Identifier:
-                    return env.WideGet(((IdentifierNode)ast).Value);
+                    return ResolveValue(((IdentifierNode)ast).Value);
                 case NodeType.Procedure:
                     Container output = null;
                     foreach (var n in ((ProcedureNode)ast).Body)
