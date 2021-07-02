@@ -14,6 +14,10 @@ namespace Harmony.Interpreter
     {
         public string Name;
         dynamic _Value;
+
+        public Container Getter = null;
+        public Container Setter = null;
+
         public dynamic Value
         {
             get
@@ -31,6 +35,15 @@ namespace Harmony.Interpreter
 
         public dynamic Get()
         {
+            if (Getter != null)
+            {
+                if (!Getter.IsFunction())
+                {
+                    throw new Exception($"getter on value '{Name}' is not a function");
+                }
+                return Getter.Call(Interpreter.Instance, new List<Container>()).Value; // No args
+            }
+
             return _Value;
         }
 

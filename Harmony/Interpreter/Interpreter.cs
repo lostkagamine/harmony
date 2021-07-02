@@ -21,6 +21,13 @@ namespace Harmony.Interpreter
     {
         public Environment Environment;
 
+        internal static Interpreter Instance;
+
+        public Interpreter()
+        {
+            Instance = this;
+        }
+
         Container DoIf(IfNode ast)
         {
             var cond = Evaluate(ast.Condition);
@@ -143,6 +150,16 @@ namespace Harmony.Interpreter
             return new Container(oval);
         }
 
+        public Container ConstructFunctionInContainer(Node body, List<string> args)
+        {
+            return new Container(
+                new HarmonyFunction()
+                {
+                    Body = body,
+                    Arguments = args
+                });
+        }
+
         public Container Evaluate(Node ast, Environment _env = null)
         {
             var env = Environment;
@@ -248,6 +265,23 @@ namespace Harmony.Interpreter
                         throw msg;
                     }
                     throw new Exception($"userland error: '{msg}'");
+                case NodeType.Override:
+                    var or_val = Evaluate(((OverrideNode)ast).Value);
+                    var or_body = ((OverrideNode)ast).Body;
+                    var or_type = ((OverrideNode)ast).Override;
+
+
+
+                    switch (or_type)
+                    {
+                        case OverrideType.Getter:
+                            or_val.Getter = ConstructFunctionInContainer(or_body, new List<string>());
+                            break;
+                        case OverrideType.Setter:
+                            or_val.Setter = ConstructFunctionInContainer(or_body, new List<string>());
+                            break;
+                    }
+                    return new Container(null);
 
                 default:
                     throw new Exception($"interpretation failure: '{ast.Type}'");

@@ -23,6 +23,7 @@ namespace Harmony.AST.Nodes
         Extern,
         Return,
         Throw,
-        Lambda
+        Lambda,
+        Override
     }
 }

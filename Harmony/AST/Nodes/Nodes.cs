@@ -165,4 +165,16 @@ namespace Harmony.AST.Nodes
         public List<string> Arguments;
         public Node Body;
     }
+
+    public class OverrideNode : Node
+    {
+        public OverrideNode()
+        {
+            Type = NodeType.Override;
+        }
+
+        public Node Value;
+        public OverrideType Override;
+        public Node Body;
+    }
 }

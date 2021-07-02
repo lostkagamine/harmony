@@ -40,7 +40,11 @@ namespace Harmony.Text
             "extern",
             "object",
             "return",
-            "throw"
+            "throw",
+            "lambda",
+            "override",
+            "getter",
+            "setter"
         };
 
         public char[] Operators =

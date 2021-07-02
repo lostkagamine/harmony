@@ -239,6 +239,47 @@ namespace Harmony.AST
             }
         }
 
+        Node ParseOverride()
+        {
+            var kw = tk.Next();
+
+            if (kw.Type != TokenType.Keyword)
+            {
+                throw tk.Die("override: expected an override-type keyword");
+            }
+
+            string[] good =
+            {
+                "getter",
+                "setter"
+            };
+
+            if (!good.Contains((string)kw.Value))
+            {
+                throw tk.Die($"override: bad keyword '{kw.Value}', expected an override-type");
+            }
+
+            Dictionary<string, OverrideType> types = new()
+            {
+                { "getter", OverrideType.Getter },
+                { "setter", OverrideType.Setter }
+            };
+
+            var ot = types[kw.Value];
+
+            var ident = ParseIdent(tk.Next());
+
+            SkipKw("do");
+            var body = ParseBlock();
+
+            return new OverrideNode()
+            {
+                Override = ot,
+                Body = body,
+                Value = ident
+            };
+        }
+
         Node ParseAtom()
         {
             if (IsPunc('('))
@@ -296,6 +337,12 @@ namespace Harmony.AST
                     Value = id.Value,
                     Types = types
                 };
+            }
+
+            if (IsKeyword("override"))
+            {
+                tk.Next();
+                return ParseOverride();
             }
 
             if (IsKeyword("lambda") || (current.Type == TokenType.Operator && current.Value == "->"))
