@@ -22,6 +22,7 @@ namespace Harmony.Interpreter
     {
         public Node Body;
         public List<string> Arguments;
+        public HarmonyFunction Precondition = null;
 
         public Container Run(Interpreter i, List<Container> args)
         {

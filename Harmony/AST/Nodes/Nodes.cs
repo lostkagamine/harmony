@@ -91,6 +91,7 @@ namespace Harmony.AST.Nodes
         public string Name;
         public ProcedureNode Body;
         public List<string> Arguments;
+        public Precondition Precondition;
     }
 
     public class CallNode : Node

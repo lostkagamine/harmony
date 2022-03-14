@@ -202,6 +202,18 @@ namespace Harmony.Interpreter
                         var res = Evaluate(t);
                         args.Add(res);
                     }
+                    if (fn.Value is HarmonyFunction)
+                    {
+                        var x_fn = (HarmonyFunction)fn.Value;
+                        if (x_fn.Precondition != null)
+                        {
+                            var precond = x_fn.Precondition.Run(this, args);
+                            if (!precond.Truthy())
+                            {
+                                throw new Exception("precondition failure");
+                            }
+                        }
+                    }
                     return fn.Call(this, args);
                 case NodeType.If:
                     return DoIf((IfNode)ast);
@@ -238,10 +250,21 @@ namespace Harmony.Interpreter
                 case NodeType.Function:
                     var fnode = ((FunctionNode)ast);
                     var fname = fnode.Name;
+                    HarmonyFunction fprecond = null;
+                    if (fnode.Precondition != null)
+                    {
+                        fprecond = new HarmonyFunction()
+                        {
+                            Arguments = fnode.Precondition.Condition.Arguments,
+                            Body = fnode.Precondition.Condition.Body,
+                            Precondition = null
+                        };
+                    }
                     var fobj = new HarmonyFunction()
                     {
                         Arguments = fnode.Arguments,
-                        Body = fnode.Body
+                        Body = fnode.Body,
+                        Precondition = fprecond
                     };
                     return env.Set(fname, new Container(fobj));
                 case NodeType.Lambda:
@@ -249,7 +272,8 @@ namespace Harmony.Interpreter
                     var lobj = new HarmonyFunction()
                     {
                         Arguments = lnode.Arguments,
-                        Body = lnode.Body
+                        Body = lnode.Body,
+                        Precondition = null
                     };
                     return new Container(lobj);
                 case NodeType.Binary:

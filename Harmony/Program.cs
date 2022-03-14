@@ -13,7 +13,7 @@ namespace Harmony
     {
         static void Main(string[] args)
         {
-            var Code = File.ReadAllText(args.Length != 0 ? args[0] : "Examples/test.har");
+            var Code = File.ReadAllText(args.Length != 0 ? args[0] : "Examples/test.hc");
 
             var ms = new MemoryStream(Encoding.UTF8.GetBytes(Code));
             var srw = new StreamReaderWrapper(ms);
@@ -33,8 +33,6 @@ namespace Harmony
                     Assembly.Load(a);
                 })
             ));
-
-            Importer.Import(intp, "prelude");
 
             env.Define("using", new Container(
                 (Action<string>)((a) =>

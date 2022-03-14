@@ -218,13 +218,37 @@ namespace Harmony.AST
             var id = ParseIdent(current);
             tk.Next();
             var args = Delimited('(', ')', ',', IdentAndSkip);
+            Precondition precondition = null;
+            if (IsKeyword("must"))
+            {
+                precondition = new Precondition();
+                precondition.Type = PreconditionType.Pre;
+                tk.Next();
+                if (IsKeyword("lambda") || (current.Type == TokenType.Operator && current.Value == "->"))
+                {
+                    tk.Next(); // skip the keyword/token
+                    var lambda_args = Delimited('(', ')', ',', IdentAndSkip);
+                    SkipKwOptional("do");
+                    var lambda_body = ParseBlock();
+                    var ln = new LambdaNode()
+                    {
+                        Body = lambda_body,
+                        Arguments = lambda_args.Select(e => ((IdentifierNode)e).Value).ToList()
+                    };
+                    precondition.Condition = ln;
+                } else
+                {
+                    throw new Exception("expected lambda after 'must'");
+                }
+            }
             SkipKwOptional("do");
             var bd = ParseBlock();
             return new FunctionNode()
             {
                 Name = ((IdentifierNode)id).Value,
                 Body = (ProcedureNode)bd,
-                Arguments = args.Select(e => ((IdentifierNode)e).Value).ToList()
+                Arguments = args.Select(e => ((IdentifierNode)e).Value).ToList(),
+                Precondition = precondition
             };
         }
 

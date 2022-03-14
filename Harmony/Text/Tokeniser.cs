@@ -44,7 +44,8 @@ namespace Harmony.Text
             "lambda",
             "override",
             "getter",
-            "setter"
+            "setter",
+            "must"
         };
 
         public char[] Operators =
